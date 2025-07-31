@@ -6,7 +6,7 @@ import "./globals.css"
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  // preload: true,
   variable: "--font-inter",
 })
 
@@ -18,8 +18,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
-  },
-    generator: 'v0.dev'
+  }
 }
 
 export default function RootLayout({
