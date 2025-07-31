@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     "Streamline your logistics workflow with professional task management for shipping and supply chain operations",
   icons: {
     icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
     generator: 'v0.dev'
 }
