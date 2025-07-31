@@ -12,35 +12,69 @@ interface TodoFormProps {
 export function TodoForm({ onAddTodo }: TodoFormProps) {
   const [heading, setHeading] = useState("")
   const [description, setDescription] = useState("")
-  const [error, setError] = useState("")
+  const [headingError, setHeadingError] = useState("")
+  const [descriptionError, setDescriptionError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const validateFields = () => {
+    let isValid = true
+    const trimmedHeading = heading.trim()
+    const trimmedDescription = description.trim()
+
+    // Reset errors
+    setHeadingError("")
+    setDescriptionError("")
+
+    // Validate heading
+    if (trimmedHeading.length === 0) {
+      setHeadingError("Please enter a task heading")
+      isValid = false
+    }
+
+    // Validate description
+    if (trimmedDescription.length === 0) {
+      setDescriptionError("Please enter a task description")
+      isValid = false
+    }
+
+    return isValid
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!validateFields()) {
+      return
+    }
+
     const trimmedHeading = heading.trim()
     const trimmedDescription = description.trim()
 
-    if (trimmedHeading.length === 0) {
-      setError("Please enter a task heading")
-      return
-    }
-
-    if (trimmedDescription.length === 0) {
-      setError("Please enter a task description")
-      return
-    }
-
     try {
       setIsSubmitting(true)
-      setError("")
       await onAddTodo(trimmedHeading, trimmedDescription)
       setHeading("")
       setDescription("")
+      setHeadingError("")
+      setDescriptionError("")
     } catch (err) {
-      setError("Failed to add task. Please try again.")
+      // Error handling is done in parent component
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleHeadingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHeading(e.target.value)
+    if (headingError && e.target.value.trim().length > 0) {
+      setHeadingError("")
+    }
+  }
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value)
+    if (descriptionError && e.target.value.trim().length > 0) {
+      setDescriptionError("")
     }
   }
 
@@ -56,15 +90,20 @@ export function TodoForm({ onAddTodo }: TodoFormProps) {
             id="heading"
             type="text"
             value={heading}
-            onChange={(e) => {
-              setHeading(e.target.value)
-              if (error) setError("")
-            }}
+            onChange={handleHeadingChange}
             placeholder="e.g., Deliver to Mumbai Port, Process customs clearance..."
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all ${
+              headingError ? "border-red-400 focus:ring-red-400" : "border-white/20"
+            }`}
             disabled={isSubmitting}
-            aria-describedby={error ? "error-message" : undefined}
+            aria-describedby={headingError ? "heading-error" : undefined}
           />
+          {headingError && (
+            <p id="heading-error" className="text-red-400 text-sm mt-1 flex items-center" role="alert">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {headingError}
+            </p>
+          )}
         </div>
 
         <div>
@@ -74,28 +113,27 @@ export function TodoForm({ onAddTodo }: TodoFormProps) {
           <textarea
             id="description"
             value={description}
-            onChange={(e) => {
-              setDescription(e.target.value)
-              if (error) setError("")
-            }}
+            onChange={handleDescriptionChange}
             placeholder="Detailed description of the shipment or task requirements..."
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none"
+            className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none ${
+              descriptionError ? "border-red-400 focus:ring-red-400" : "border-white/20"
+            }`}
             disabled={isSubmitting}
             rows={3}
-            aria-describedby={error ? "error-message" : undefined}
+            aria-describedby={descriptionError ? "description-error" : undefined}
           />
+          {descriptionError && (
+            <p id="description-error" className="text-red-400 text-sm mt-1 flex items-center" role="alert">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {descriptionError}
+            </p>
+          )}
         </div>
       </div>
 
-      {error && (
-        <p id="error-message" className="text-red-400 text-sm" role="alert">
-          {error}
-        </p>
-      )}
-
       <button
         type="submit"
-        disabled={isSubmitting || !heading.trim() || !description.trim()}
+        disabled={isSubmitting}
         className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900"
         aria-label="Add new shipment task"
       >
